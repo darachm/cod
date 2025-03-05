@@ -58,6 +58,9 @@
             grid-template-columns: 50% 50%;
             gap: 10px;
         }
+        h1 {
+            clear: both;
+        }
         .arrow {
             font-size: 10rem;
         }
@@ -82,14 +85,13 @@
             'up-right', 'up-left', 'down-right', 'down-left'
         ];
 
-        //const WORDS = ['ready', 'go', 'prepare', 'start', 'set'];
-
         function CodPrompter() {
             const [isRunning, setIsRunning] = useState(false);
             const [currentScreen, setCurrentScreen] = useState('');
             const [currentArrow, setCurrentArrow] = useState('');
-            const [readyDurationMin, setReadyDurationMin] = useState(2);
-            const [readyDurationMax, setReadyDurationMax] = useState(3);
+            const [approachDurationMin, setApproachDurationMin] = useState(2);
+            const [approachDurationMax, setApproachDurationMax] = useState(3);
+            const [readyDuration, setReadyDuration] = useState(3);
             const [arrowDuration, setArrowDuration] = useState(5);
             const [cycleDuration, setCycleDuration] = useState(30);
             const audioRef = useRef(null);
@@ -102,14 +104,8 @@
                 return ( minz + (maxz - minz) * Math.random() );
             };
 
-            const [readyDuration, setRandReadyDuration] = useState(
-                        getRandomTime(readyDurationMin,readyDurationMax));
-
-            /*
-            const getRandomWord = () => {
-                return WORDS[Math.floor(Math.random() * WORDS.length)];
-            };
-            */
+            const [approachDuration, setRandReadyDuration] = useState(
+                        getRandomTime(approachDurationMin,approachDurationMax));
 
             useEffect(() => {
                 let intervalId;
@@ -120,36 +116,42 @@
 
                     cycleCount += 1;
 
-                    // Ready phase
                     setCurrentScreen("ready "+cycleCount);
-                    //setCurrentScreen(getRandomWord());
-                    setCurrentArrow('');
-                    
+
                     setTimeout(() => {
 
-                        // Arrow phase
-                        const direction = getRandomDirection();
-                        setCurrentScreen('');
-                        setCurrentArrow(`arrow-${direction}`);
-
-                        // Play beep sound
-                        if (audioRef.current) {
-                            audioRef.current.play();
-                        }
-
+                        // Ready phase
+                        setCurrentScreen("approach");
+                        //setCurrentScreen(getRandomWord());
+                        setCurrentArrow('');
+                        
                         setTimeout(() => {
-                            // Rest phase
-                            setCurrentScreen('rest '+cycleCount);
-                            setCurrentArrow('');
-                        }, arrowDuration * 1000);
 
-                    }, getRandomTime(readyDurationMin, readyDurationMax) * 1000);
+                            // Arrow phase
+                            const direction = getRandomDirection();
+                            setCurrentScreen('');
+                            setCurrentArrow(`arrow-${direction}`);
+
+                            // Play beep sound
+                            if (audioRef.current) {
+                                audioRef.current.play();
+                            }
+
+                            setTimeout(() => {
+                                // Rest phase
+                                setCurrentScreen('rest '+cycleCount);
+                                setCurrentArrow('');
+                            }, arrowDuration * 1000);
+
+                        }, getRandomTime(approachDurationMin, approachDurationMax) * 1000);
+                    }, readyDuration * 1000);
+
 
                 };
 
                 if (isRunning) {
                     intervalId = setInterval(runTrainingCycle, 
-                        Math.max(cycleDuration,readyDurationMax+arrowDuration) * 1000);
+                        Math.max(cycleDuration,approachDurationMax+arrowDuration) * 1000);
                     
                     // Start first cycle immediately
                     runTrainingCycle();
@@ -161,7 +163,7 @@
                     }
                 };
 
-            }, [isRunning, readyDurationMin, readyDurationMax, 
+            }, [isRunning, approachDurationMin, approachDurationMax, 
                     arrowDuration, cycleDuration]);
 
             return (
@@ -177,21 +179,12 @@
                         </button>
                         <div className="inputz">
                             <div className="eachinputz">
-                                <p>Minimum Ready Duration</p>
+                                <p>Ready Duration</p>
                                 <input 
                                     type="number" 
-                                    value={readyDurationMin} 
-                                    onChange={(e) => setReadyDurationMin(Number(e.target.value))}
-                                    placeholder="Ready Duration Minimum (seconds)"
-                                />
-                            </div>
-                            <div className="eachinputz">
-                                <p>Maximum Ready Duration</p>
-                                <input 
-                                    type="number" 
-                                    value={readyDurationMax} 
-                                    onChange={(e) => setReadyDurationMax(Number(e.target.value))}
-                                    placeholder="Ready Duration Maximum (seconds)"
+                                    value={readyDuration} 
+                                    onChange={(e) => setReadyDuration(Number(e.target.value))}
+                                    placeholder="Ready Duration (seconds)"
                                 />
                             </div>
                             <div className="eachinputz">
@@ -201,6 +194,24 @@
                                     value={arrowDuration} 
                                     onChange={(e) => setArrowDuration(Number(e.target.value))}
                                     placeholder="Arrow Duration (seconds)"
+                                />
+                            </div>
+                            <div className="eachinputz">
+                                <p>Minimum Approach Duration</p>
+                                <input 
+                                    type="number" 
+                                    value={approachDurationMin} 
+                                    onChange={(e) => setApproachDurationMin(Number(e.target.value))}
+                                    placeholder="Approach Duration Minimum (seconds)"
+                                />
+                            </div>
+                            <div className="eachinputz">
+                                <p>Maximum Approach Duration</p>
+                                <input 
+                                    type="number" 
+                                    value={approachDurationMax} 
+                                    onChange={(e) => setApproachDurationMax(Number(e.target.value))}
+                                    placeholder="Approach Duration Maximum (seconds)"
                                 />
                             </div>
                             <div className="eachinputz">
@@ -218,12 +229,13 @@
                     <h1>README</h1>
 
                     <p>
-                        ready + arrow = total cycle duration
+                        ready + approach + arrow + rest = total cycle duration
                     </p>
 
                     <p>
-                    For each repetition, this displays "ready" for some random
-                    time between the max and minimum you provide.
+                    For each repetition, this displays "ready" for a time,
+                    then "approach" for some random time between the 
+                    max and minimum you provide.
                     Then it shows an arrow for as long as you specify.
                     Then it shows "rest" for the remainder of the time for
                     that cycle.
@@ -238,6 +250,10 @@
                     Then figure out where you need to be to start running at 
                     the phone such that it suprises you with a direction to 
                     change to.
+                    When it says "approach", run like fuck at the phone and
+                    then when it breaks to an arrow, switch to running 
+                    that direction as hard as you fucking can.
+                    Maybe set some cones to aim for, to hit.
                     Experiment with movement and body-positioning strategies 
                     to see how you can bias the tradeoff between 
                     reactivity/agility or forward speed.
