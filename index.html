@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<!-- written by claude haiku 3.5 and edited a little by darach -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reaction Trainer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/17.0.2/umd/react.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/17.0.2/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.26.0/babel.min.js"></script>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        #root {
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+        }
+        .screen {
+            width: 100%;
+            height: 60vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 4rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        .controls {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 2px;
+        }
+        .controls input, .controls button, .controls p {
+            padding: 2px;
+            margin: 10px;
+            font-size: 1rem;
+        }
+        .arrow {
+            font-size: 10rem;
+        }
+        .arrow-up::before { content: '⬆️'; }
+        .arrow-down::before { content: '⬇️'; }
+        .arrow-left::before { content: '⬅️'; }
+        .arrow-right::before { content: '➡️'; }
+        .arrow-up-right::before { content: '↗️'; }
+        .arrow-up-left::before { content: '↖️'; }
+        .arrow-down-right::before { content: '↘️'; }
+        .arrow-down-left::before { content: '↙️'; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        const DIRECTIONS = [
+            'up', 'down', 'left', 'right', 
+            'up-right', 'up-left', 'down-right', 'down-left'
+        ];
+
+        //const WORDS = ['ready', 'go', 'prepare', 'start', 'set'];
+
+        function ReactionTrainer() {
+            const [isRunning, setIsRunning] = useState(false);
+            const [currentScreen, setCurrentScreen] = useState('');
+            const [currentArrow, setCurrentArrow] = useState('');
+            const [readyDurationMin, setReadyDurationMin] = useState(2);
+            const [readyDurationMax, setReadyDurationMax] = useState(3);
+            const [arrowDuration, setArrowDuration] = useState(5);
+            const [cycleDuration, setCycleDuration] = useState(30);
+            const audioRef = useRef(null);
+
+            const getRandomDirection = () => {
+                return DIRECTIONS[Math.floor(Math.random() * DIRECTIONS.length)];
+            };
+
+            const getRandomTime = (minz,maxz) => {
+                return ( minz + (maxz - minz) * Math.random() );
+            };
+
+            const [readyDuration, setRandReadyDuration] = useState(
+                        getRandomTime(readyDurationMin,readyDurationMax));
+
+            /*
+            const getRandomWord = () => {
+                return WORDS[Math.floor(Math.random() * WORDS.length)];
+            };
+            */
+
+            useEffect(() => {
+                let intervalId;
+                
+                const runTrainingCycle = () => {
+
+                    // Ready phase
+                    setCurrentScreen("ready");
+                    //setCurrentScreen(getRandomWord());
+                    setCurrentArrow('');
+                    
+                    setTimeout(() => {
+
+                        // Arrow phase
+                        const direction = getRandomDirection();
+                        setCurrentScreen('');
+                        setCurrentArrow(`arrow-${direction}`);
+
+                        // Play beep sound
+                        if (audioRef.current) {
+                            audioRef.current.play();
+                        }
+
+                        setTimeout(() => {
+                            // Rest phase
+                            setCurrentScreen('rest');
+                            setCurrentArrow('');
+                        }, arrowDuration * 1000);
+
+                    }, getRandomTime(readyDurationMin, readyDurationMax) * 1000);
+
+                };
+
+                if (isRunning) {
+                    intervalId = setInterval(runTrainingCycle, 
+                        (cycleDuration) * 1000);
+                    
+                    // Start first cycle immediately
+                    runTrainingCycle();
+                }
+
+                return () => {
+                    if (intervalId) {
+                        clearInterval(intervalId);
+                    }
+                };
+
+            }, [isRunning, readyDurationMin, readyDurationMax, 
+                    arrowDuration, cycleDuration]);
+
+            return (
+                <div>
+                    <div className="screen">
+                        {currentScreen && <div>{currentScreen}</div>}
+                        {currentArrow && <div className={`arrow ${currentArrow}`}></div>}
+                    </div>
+                    
+                    <div className="controls">
+                        <p>Minimum Ready Duration</p>
+                        <input 
+                            type="number" 
+                            value={readyDurationMin} 
+                            onChange={(e) => setReadyDurationMin(Number(e.target.value))}
+                            placeholder="Ready Duration Minimum (seconds)"
+                        />
+                        <p>Maximum Ready Duration</p>
+                        <input 
+                            type="number" 
+                            value={readyDurationMax} 
+                            onChange={(e) => setReadyDurationMax(Number(e.target.value))}
+                            placeholder="Ready Duration Maximum (seconds)"
+                        />
+                        <p>Arrow Duration</p>
+                        <input 
+                            type="number" 
+                            value={arrowDuration} 
+                            onChange={(e) => setArrowDuration(Number(e.target.value))}
+                            placeholder="Arrow Duration (seconds)"
+                        />
+                        <p>Total Cycle Duration</p>
+                        <input 
+                            type="number" 
+                            value={cycleDuration} 
+                            onChange={(e) => setCycleDuration(Number(e.target.value))}
+                            placeholder="Cycle Duration (seconds)"
+                        />
+                        <button onClick={() => setIsRunning(!isRunning)}>
+                            {isRunning ? 'Stop' : 'Start'}
+                        </button>
+                    </div>
+
+                    <h1>README</h1>
+
+                    <p>
+                    For each repetition, this displays "ready" for some random
+                    time between the max and minimum you provide.
+                    Then it shows an arrow for as long as you specify.
+                    Then it shows "rest" for the remainder of the time for
+                    that cycle.
+                    Then it repeats this cycle for another repetition.
+                    </p>
+
+                    <p>
+                    Recommend that you use this to prompt change-of-direction
+                    sprints in the park.
+                    Set this going on your phone and prop that up against your
+                    street shoes or something else.
+                    Then figure out where you need to be to start running at 
+                    the phone such that it suprises you with a direction to 
+                    change to.
+                    Experiment with movement and body-positioning strategies 
+                    to see how you can bias the tradeoff between 
+                    reactivity/agility or forward speed.
+                    </p>
+
+                    <p>
+                    This app was sorta written by Claude Haiku 3.5 LLM, and
+                    edited by Darach.
+                    </p>
+                    
+                    <audio ref={audioRef} src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA"></audio>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<ReactionTrainer />, document.getElementById('root'));
+    </script>
+</body>
+</html>
