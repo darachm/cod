@@ -26,7 +26,7 @@
         }
         .screen {
             width: 100%;
-            height: 60vh;
+            height: 30vh;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -38,15 +38,21 @@
             font-weight: bold;
         }
         .controls {
-            margin-top: 20px;
+            margin-top: 10px;
+        }
+        .controls button {
+            width: 100%;
+            font-size: 2rem;
+        }
+        .controls .inputz  {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 2px;
-        }
-        .controls input, .controls button, .controls p {
-            padding: 2px;
-            margin: 10px;
+            gap: 20px;
+            margin: 20px;
             font-size: 1rem;
+        }
+        p#readme {
+            color:blue;
         }
         .arrow {
             font-size: 10rem;
@@ -74,7 +80,7 @@
 
         //const WORDS = ['ready', 'go', 'prepare', 'start', 'set'];
 
-        function ReactionTrainer() {
+        function CodPrompter() {
             const [isRunning, setIsRunning] = useState(false);
             const [currentScreen, setCurrentScreen] = useState('');
             const [currentArrow, setCurrentArrow] = useState('');
@@ -103,11 +109,15 @@
 
             useEffect(() => {
                 let intervalId;
+
+                let cycleCount = 0;
                 
                 const runTrainingCycle = () => {
 
+                    cycleCount += 1;
+
                     // Ready phase
-                    setCurrentScreen("ready");
+                    setCurrentScreen("ready "+cycleCount);
                     //setCurrentScreen(getRandomWord());
                     setCurrentArrow('');
                     
@@ -125,7 +135,7 @@
 
                         setTimeout(() => {
                             // Rest phase
-                            setCurrentScreen('rest');
+                            setCurrentScreen('rest '+cycleCount);
                             setCurrentArrow('');
                         }, arrowDuration * 1000);
 
@@ -135,7 +145,7 @@
 
                 if (isRunning) {
                     intervalId = setInterval(runTrainingCycle, 
-                        (cycleDuration) * 1000);
+                        Math.max(cycleDuration,readyDurationMax+arrowDuration) * 1000);
                     
                     // Start first cycle immediately
                     runTrainingCycle();
@@ -158,40 +168,46 @@
                     </div>
                     
                     <div className="controls">
-                        <p>Minimum Ready Duration</p>
-                        <input 
-                            type="number" 
-                            value={readyDurationMin} 
-                            onChange={(e) => setReadyDurationMin(Number(e.target.value))}
-                            placeholder="Ready Duration Minimum (seconds)"
-                        />
-                        <p>Maximum Ready Duration</p>
-                        <input 
-                            type="number" 
-                            value={readyDurationMax} 
-                            onChange={(e) => setReadyDurationMax(Number(e.target.value))}
-                            placeholder="Ready Duration Maximum (seconds)"
-                        />
-                        <p>Arrow Duration</p>
-                        <input 
-                            type="number" 
-                            value={arrowDuration} 
-                            onChange={(e) => setArrowDuration(Number(e.target.value))}
-                            placeholder="Arrow Duration (seconds)"
-                        />
-                        <p>Total Cycle Duration</p>
-                        <input 
-                            type="number" 
-                            value={cycleDuration} 
-                            onChange={(e) => setCycleDuration(Number(e.target.value))}
-                            placeholder="Cycle Duration (seconds)"
-                        />
                         <button onClick={() => setIsRunning(!isRunning)}>
                             {isRunning ? 'Stop' : 'Start'}
                         </button>
+                        <div className="inputz">
+                            <p>Minimum Ready Duration</p>
+                            <input 
+                                type="number" 
+                                value={readyDurationMin} 
+                                onChange={(e) => setReadyDurationMin(Number(e.target.value))}
+                                placeholder="Ready Duration Minimum (seconds)"
+                            />
+                            <p>Maximum Ready Duration</p>
+                            <input 
+                                type="number" 
+                                value={readyDurationMax} 
+                                onChange={(e) => setReadyDurationMax(Number(e.target.value))}
+                                placeholder="Ready Duration Maximum (seconds)"
+                            />
+                            <p>Arrow Duration</p>
+                            <input 
+                                type="number" 
+                                value={arrowDuration} 
+                                onChange={(e) => setArrowDuration(Number(e.target.value))}
+                                placeholder="Arrow Duration (seconds)"
+                            />
+                            <p>Total Cycle Duration</p>
+                            <input 
+                                type="number" 
+                                value={cycleDuration} 
+                                onChange={(e) => setCycleDuration(Number(e.target.value))}
+                                placeholder="Cycle Duration (seconds)"
+                            />
+                        </div>
                     </div>
 
                     <h1>README</h1>
+
+                    <p>
+                        ready + arrow = total cycle duration
+                    </p>
 
                     <p>
                     For each repetition, this displays "ready" for some random
@@ -219,13 +235,15 @@
                     This app was sorta written by Claude Haiku 3.5 LLM, and
                     edited by Darach.
                     </p>
-                    
+
                     <audio ref={audioRef} src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA"></audio>
+
                 </div>
+                
             );
         }
 
-        ReactDOM.render(<ReactionTrainer />, document.getElementById('root'));
+        ReactDOM.render(<CodPrompter />, document.getElementById('root'));
     </script>
 </body>
 </html>
