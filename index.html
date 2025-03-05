@@ -12,7 +12,6 @@
         body, html {
             margin: 0;
             padding: 0;
-            height: 100%;
             font-family: Arial, sans-serif;
             display: flex;
             justify-content: center;
@@ -45,14 +44,19 @@
             font-size: 2rem;
         }
         .controls .inputz  {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr 1fr;
-            gap: 20px;
-            margin: 20px;
             font-size: 1rem;
+            margin: 20px;
+            width: 100%;
         }
-        p#readme {
-            color:blue;
+        .controls .inputz div {
+            float: left;
+            margin: 10px;
+        }
+        .controls .inputz .eachinputz {
+            max-width: 45%;
+            display: grid;
+            grid-template-columns: 50% 50%;
+            gap: 10px;
         }
         .arrow {
             font-size: 10rem;
@@ -172,34 +176,42 @@
                             {isRunning ? 'Stop' : 'Start'}
                         </button>
                         <div className="inputz">
-                            <p>Minimum Ready Duration</p>
-                            <input 
-                                type="number" 
-                                value={readyDurationMin} 
-                                onChange={(e) => setReadyDurationMin(Number(e.target.value))}
-                                placeholder="Ready Duration Minimum (seconds)"
-                            />
-                            <p>Maximum Ready Duration</p>
-                            <input 
-                                type="number" 
-                                value={readyDurationMax} 
-                                onChange={(e) => setReadyDurationMax(Number(e.target.value))}
-                                placeholder="Ready Duration Maximum (seconds)"
-                            />
-                            <p>Arrow Duration</p>
-                            <input 
-                                type="number" 
-                                value={arrowDuration} 
-                                onChange={(e) => setArrowDuration(Number(e.target.value))}
-                                placeholder="Arrow Duration (seconds)"
-                            />
-                            <p>Total Cycle Duration</p>
-                            <input 
-                                type="number" 
-                                value={cycleDuration} 
-                                onChange={(e) => setCycleDuration(Number(e.target.value))}
-                                placeholder="Cycle Duration (seconds)"
-                            />
+                            <div className="eachinputz">
+                                <p>Minimum Ready Duration</p>
+                                <input 
+                                    type="number" 
+                                    value={readyDurationMin} 
+                                    onChange={(e) => setReadyDurationMin(Number(e.target.value))}
+                                    placeholder="Ready Duration Minimum (seconds)"
+                                />
+                            </div>
+                            <div className="eachinputz">
+                                <p>Maximum Ready Duration</p>
+                                <input 
+                                    type="number" 
+                                    value={readyDurationMax} 
+                                    onChange={(e) => setReadyDurationMax(Number(e.target.value))}
+                                    placeholder="Ready Duration Maximum (seconds)"
+                                />
+                            </div>
+                            <div className="eachinputz">
+                                <p>Arrow Duration</p>
+                                <input 
+                                    type="number" 
+                                    value={arrowDuration} 
+                                    onChange={(e) => setArrowDuration(Number(e.target.value))}
+                                    placeholder="Arrow Duration (seconds)"
+                                />
+                            </div>
+                            <div className="eachinputz">
+                                <p>Total Cycle Duration</p>
+                                <input 
+                                    type="number" 
+                                    value={cycleDuration} 
+                                    onChange={(e) => setCycleDuration(Number(e.target.value))}
+                                    placeholder="Cycle Duration (seconds)"
+                                />
+                            </div>
                         </div>
                     </div>
 
